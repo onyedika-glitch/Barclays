@@ -138,3 +138,47 @@ body { font-family: 'Inter', sans-serif; }
   text-align: center;
 }
 .btn:hover { background: #e55a00; }
+
+/* ─── DROPDOWN ─────────────────────────────────────────── */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-btn {
+  background: var(--brand-orange);
+  color: #fff;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.dropdown-btn:hover { background:#e55a00; }
+
+.dropdown-content {
+  position: absolute;
+  right: 0;                  /* align to button’s right edge */
+  top: calc(100% + .4rem);
+  min-width: 180px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  border-radius: 8px;
+  padding: 0.5rem 0;
+  display: none;             /* hidden by default */
+  z-index: 1000;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #333;
+  text-decoration: none;
+}
+
+.dropdown-content a:hover { background:#f3f4f6; }
+
+/* simple toggle class */
+.dropdown.open .dropdown-content { display:block; }

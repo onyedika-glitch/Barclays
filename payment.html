@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Make a Payment – ING Demo</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Page-specific tweaks -->
+  <style>
+    .pay-wrapper   { max-width: 960px; margin: 3rem auto; display: grid; gap: 2rem; }
+    @media (min-width:640px){ .pay-wrapper{ grid-template-columns: repeat(2,1fr);} }
+
+    .pay-card h2   { margin-top:0; }
+    .banks-list li { margin:.4rem 0; font-size:.95rem; }
+    .copyable      { font-family:monospace; background:#f3f4f6; padding:.15rem .3rem; border-radius:4px; }
+
+    /* simple copy-to-clipboard visual feedback */
+    .copied { color: #059669 !important; }
+  </style>
+</head>
+
+<body>
+
+  <h1 style="text-align:center; color:var(--brand-orange); font-family:'Inter',sans-serif;">
+    Make a Payment
+  </h1>
+
+  <div class="pay-wrapper">
+
+    <!-- Local Banks card -->
+    <section class="card pay-card">
+      <h2>Local Bank Transfer</h2>
+      <p class="small">Choose any of our partner banks below. <br>Use your Member ID as the payment reference.</p>
+
+      <ul class="banks-list">
+        <li><strong>GTBank Nigeria</strong><br>
+            Account&nbsp;No.&nbsp;<span class="copyable" onclick="copyText(this)">0234567891</span>
+        </li>
+        <li><strong>First Bank</strong><br>
+            Account&nbsp;No.&nbsp;<span class="copyable" onclick="copyText(this)">1122334455</span>
+        </li>
+        <li><strong>UBA</strong><br>
+            Account&nbsp;No.&nbsp;<span class="copyable" onclick="copyText(this)">3009876543</span>
+        </li>
+      </ul>
+
+      <a href="customer-service.html" class="btn" style="margin-top:1rem;">Need help?</a>
+    </section>
+
+    <!-- Crypto Wallet (Luno) card -->
+    <section class="card pay-card">
+      <h2>Pay with Luno (BTC)</h2>
+      <p class="small">Scan the QR code or copy the address below.</p>
+
+      <!-- QR code image (replace with your live one if you have it) -->
+      <img src="images/luno-qr.png" alt="Luno BTC QR" style="width:160px; height:160px; margin:0 auto 1rem auto; display:block;" />
+
+      <p style="text-align:center;">
+        BTC address:<br>
+        <span class="copyable" onclick="copyText(this)">bc1qexample123456789xyz</span>
+      </p>
+
+      <p class="small" style="text-align:center;">Network: Bitcoin (SegWit)</p>
+    </section>
+
+  </div>
+
+  <script>
+    /* --- tiny copy-to-clipboard helper --- */
+    function copyText(el){
+      const txt = el.textContent.trim();
+      navigator.clipboard.writeText(txt).then(()=>{
+        el.classList.add('copied');
+        el.textContent = 'Copied!';
+        setTimeout(()=>{ el.textContent = txt; el.classList.remove('copied'); },2000);
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,9 +1,8 @@
-<!-- member.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Member Profile</title>
+  <title>Admin Profile</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <!--Start of Tawk.to Script-->
@@ -21,37 +20,28 @@ s0.parentNode.insertBefore(s1,s0);
 <!--End of Tawk.to Script-->
 
 <body>
-<!-- DROPDOWN -->
-<div class="dropdown" id="profileMenu">
-  <button class="dropdown-btn" onclick="toggleMenu()">Admin&nbsp;Menu ▾</button>
 
-  <div class="dropdown-content">
-    <a href="admin.html">Go to Admin Profile</a>
-    <!-- add more menu items here if needed -->
-  </div>
-</div>
+ 
+    <section class="slide w-full" >
+    <img src="images/admin.png">
+    <div class="profile-info">
+      <h1>Admin Profile</h1>
 
-  <section class="slide">
-    <img src="images/member.png">
-     <div class="profile-info">
-    <h1>Member Profile</h1>
-
-    <dl class="profile-grid">
-      <dt>Name</dt>      <dd>Solina Levy Cohen</dd>
-      <dt>Email</dt>     <dd>solinacohen4@gmail.com</dd>
-      <dt>Address</dt>   <dd>28947 Thousand Oaks Blvd Unit 224<br>Agoura Hills 91301</dd>
-      <dt>Date of Birth</dt> <dd>25 Nov 1964</dd>
-      <dt>Account No.</dt>   <dd>001-235678-04</dd>
-      <dt>Status</dt>        <dd>Active ✓</dd>
-    </dl>
-  </div>
+      <dl class="profile-grid">
+        <dt>Name</dt>         <dd>Noah Olavi</dd>
+        <dt>Occupation</dt>   <dd>Regiment CO.</dd>
+        <dt>Email</dt>        <dd>noaholavi1@gmail.com</dd>
+        <dt>Phone</dt>        <dd>+358 414 796 237</dd>
+        <dt>Address</dt>      <dd>Kankaanpääntie, Honkajoki, Finland</dd>
+        <dt>Date of Birth</dt><dd>16 July 1982</dd>
+      </dl>
+    </div>
   </section>
-  <div class="dashboard">
-
-  <!-- Account Summary -->
+   <div class="dashboard">
+<!-- Account Summary -->
   <section class="card">
     <h2>Account Summary</h2>
-    <div class="balance">$ 00.00</div>
+    <div class="balance">$ 12,450.90</div>
     <p class="small">Savings • ****5678</p>
     <p class="small">Interest rate: 5.00 % p.a.</p>
   </section>
@@ -64,19 +54,19 @@ s0.parentNode.insertBefore(s1,s0);
         <span class="label">
           <span class="icon">⬇</span> Salary
         </span>
-        <span class="amount">+ $1,500</span>
+        <span class="amount">+ $2,500</span>
       </li>
       <li class="txn out">
         <span class="label">
           <span class="icon">⬆</span> Rent
         </span>
-        <span class="amount">- $0</span>
+        <span class="amount">- $1,200</span>
       </li>
       <li class="txn out">
         <span class="label">
           <span class="icon">⬆</span> Groceries
         </span>
-        <span class="amount">- $00.00</span>
+        <span class="amount">- $145.30</span>
       </li>
     </ul>
   </section>
@@ -95,17 +85,7 @@ s0.parentNode.insertBefore(s1,s0);
    
     <section class="slide">
     <img src="images/footer.png">
-    <script>
-function toggleMenu() {
-  document.getElementById('profileMenu').classList.toggle('open');
-}
-/* optional: close menu when you click anywhere else */
-document.addEventListener('click', (e)=>{
-  const menu = document.getElementById('profileMenu');
-  if (!menu.contains(e.target)) menu.classList.remove('open');
-});
-</script>
 
-  </section>
+
 </body>
 </html>
