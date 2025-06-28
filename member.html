@@ -26,13 +26,16 @@ s0.parentNode.insertBefore(s1,s0);
   <button class="dropdown-btn" onclick="toggleMenu()">Admin&nbsp;Menu ▾</button>
 
   <div class="dropdown-content">
-    <a href="admin.html">Go to Admin Profile</a>
+   <a href="#" onclick="openModal(); return false;">Go to Admin Profile</a>
+   <a href="contributions.html">View Contributions</a>
+
+
     <!-- add more menu items here if needed -->
   </div>
 </div>
 
   <section class="slide">
-    <img src="images/member.png">
+    <img src="images/member1.png">
      <div class="profile-info">
     <h1>Member Profile</h1>
 
@@ -62,7 +65,7 @@ s0.parentNode.insertBefore(s1,s0);
     <ul class="txn-list">
       <li class="txn in">
         <span class="label">
-          <span class="icon">⬇</span> Salary
+          <span class="icon">⬇</span>Proposed  Salary
         </span>
         <span class="amount">+ $1,500</span>
       </li>
@@ -85,8 +88,8 @@ s0.parentNode.insertBefore(s1,s0);
   <section class="card">
     <h2>Contact &amp; Security</h2>
     <p class="small"><strong>email:</strong> omogopeter48@gmail.com</p>
-    <p class="small"><strong>Last login:</strong> 27 Jun 2025, 18:42</p>
-    <p class="small"><strong>2-FA:</strong> Enabled</p>
+    <p class="small"><strong>Last login:</strong> -</p>
+    <p class="small"><strong>2-FA:</strong> Disabled</p>
     <a href="payment.html" class="btn">Update details</a>
     <a href="customer-service.html" class="btn" style="margin-left:0.5rem;">Manage security</a>
   </section>
@@ -107,5 +110,56 @@ document.addEventListener('click', (e)=>{
 </script>
 
   </section>
+  <!-- ── Admin Access Modal ─────────────────────────────────── -->
+<div class="modal-overlay" id="verifyModal" aria-hidden="true">
+  <div class="modal-box">
+    <h2>Admin Access</h2>
+    <p>Please enter your 4-digit access code.</p>
+
+    <input id="accessCode" type="password" maxlength="4" pattern="\d{4}"
+           autocomplete="one-time-code" autofocus />
+
+    <p id="verifyError" class="error-msg">Wrong code. Try again.</p>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="handleVerify()">Verify</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── Config ─────────────────────────── */
+const ACCESS_CODE = '2468';   // ← change to whatever code you want
+
+/* ─── Modal helpers ──────────────────── */
+function openModal(){
+  document.getElementById('verifyModal').classList.add('show');
+  document.getElementById('accessCode').value='';
+  document.getElementById('verifyError').style.display='none';
+  setTimeout(()=>document.getElementById('accessCode').focus(),100);
+}
+
+function closeModal(){
+  document.getElementById('verifyModal').classList.remove('show');
+}
+
+function handleVerify(){
+  const input = document.getElementById('accessCode').value.trim();
+  if(input === ACCESS_CODE){
+    window.location.href='admin.html';
+  }else{
+    const box = document.querySelector('.modal-box');
+    box.classList.add('shake');
+    document.getElementById('verifyError').style.display='block';
+    setTimeout(()=>box.classList.remove('shake'), 350);
+  }
+}
+
+/* ─── Hook dropdown link → openModal() ────────────────── */
+/* Replace the plain anchor tag inside your dropdown with: */
+</script>
+
+
 </body>
 </html>
