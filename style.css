@@ -1,0 +1,140 @@
+/* ─── GENERAL (you might already have this) ───────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+:root {
+  --brand-orange: #ff6200;
+  --card-bg:      #ffffff;
+  --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+body { font-family: 'Inter', sans-serif; }
+
+/* ─── PROFILE CARD ───────────────────────────────────────────────── */
+.profile-card {
+  max-width: 460px;              /* centred card on desktop */
+  margin: 2rem auto;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.profile-header {
+  background: url('images/member.png') center/cover;
+  height: 120px;
+}
+
+.profile-info {
+  padding: 1.75rem 2rem;
+}
+
+.profile-info h1 {
+  margin: 0 0 1.2rem 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--brand-orange);
+  text-align: center;
+}
+
+/* detail grid */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  row-gap: 0.75rem;
+  column-gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.profile-grid dt {
+  color: #666;
+  font-weight: 500;
+  text-align: right;
+  padding-right: 0.25rem;
+}
+
+.profile-grid dd {
+  margin: 0;
+  font-weight: 500;
+  color: #222;
+  word-break: break-word;
+}
+
+/* make it single-column on narrow screens */
+@media (max-width: 480px) {
+  .profile-grid { grid-template-columns: 1fr; }
+  .profile-grid dt { text-align: left; }
+}
+
+/* ─── DASHBOARD GRID ─────────────────────────────────────────────── */
+.dashboard {
+  display: grid;
+  gap: 1.5rem;
+  margin: 2rem auto;
+  max-width: 960px;
+}
+
+@media (min-width: 640px) {           /* ≥ sm: two columns  */
+  .dashboard { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {          /* ≥ lg: three columns */
+  .dashboard { grid-template-columns: repeat(3, 1fr); }
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+
+.card h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--brand-orange);
+  margin-bottom: 1rem;
+}
+
+/* Account summary */
+.balance {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.small {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Transactions */
+.txn-list { list-style: none; padding: 0; margin: 0; }
+.txn { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
+.txn:last-child { margin-bottom: 0; }
+.txn .label { display: flex; align-items: center; gap: 0.5rem; }
+.txn.in  .amount { color: #059669; }   /* green */
+.txn.out .amount { color: #dc2626; }   /* red */
+
+/* Icons */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #f3f4f6;                /* slate-100 */
+  font-size: 0.8rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  color: #fff;
+  background: var(--brand-orange);
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+}
+.btn:hover { background: #e55a00; }
