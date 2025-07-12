@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data API</title>
+    <script>
+        // Get the current values from the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        
+        // Function to read the current data
+        function readData() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'data.txt', false);  // Synchronous request
+            xhr.send();
+            
+            if (xhr.status === 200) {
+                return xhr.responseText;
+            } else {
+                return "0.00|0.00";
+            }
+        }
+        
+        // Function to write data
+        function writeData(data) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'data.txt', false);  // Synchronous request
+            xhr.setRequestHeader('Content-Type', 'text/plain');
+            xhr.send(data);
+            
+            return xhr.status === 200;
+        }
+        
+        // Handle the request
+        if (action === 'get') {
+            // Read and return the current data
+            const data = readData();
+            const [member, admin] = data.split('|');
+            
+            document.write(JSON.stringify({
+                member: parseFloat(member),
+                admin: parseFloat(admin),
+                lastUpdated: new Date().toISOString()
+            }));
+        } else if (action === 'set') {
+            // Update the data
+            const member = urlParams.get('member');
+            const admin = urlParams.get('admin');
+            
+            if (member !== null && admin !== null) {
+                const newData = `${member}|${admin}`;
+                const success = writeData(newData);
+                
+                document.write(JSON.stringify({
+                    success: success,
+                    data: {
+                        member: parseFloat(member),
+                        admin: parseFloat(admin),
+                        lastUpdated: new Date().toISOString()
+                    }
+                }));
+            } else {
+                document.write(JSON.stringify({
+                    success: false,
+                    message: "Missing parameters"
+                }));
+            }
+        } else {
+            document.write(JSON.stringify({
+                success: false,
+                message: "Invalid action"
+            }));
+        }
+    </script>
+</head>
+<body>
+    <!-- This page serves as a simple API -->
+</body>
+</html>

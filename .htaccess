@@ -1,0 +1,15 @@
+# Allow writing to data.txt
+<Files "data.txt">
+    Order allow,deny
+    Allow from all
+    <LimitExcept GET POST>
+        Deny from all
+    </LimitExcept>
+</Files>
+
+# Prevent caching of data files
+<FilesMatch "data\.(txt|html)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+</FilesMatch>

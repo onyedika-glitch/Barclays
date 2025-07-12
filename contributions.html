@@ -57,7 +57,7 @@
 
   <p style="text-align:center;margin-top:2rem;">
     <a href="member.html" class="btn">Back to Dashboard</a>
-    <button onclick="promptDevCode()" class="btn" style="margin-left:1rem;background:#64748b;">Admin Access</button>
+   
   </p>
 
   <!-- hidden floating buttons (appear after unlock) -->
@@ -80,7 +80,7 @@
   </div>
 
   <script>
-  /* ─── server-side persistent totals ───────────────────── */
+  /* ─── server-side persistent totals (HTML-based API) ───────────────────── */
   const $ = id => document.getElementById(id);
   
   // Global values object
@@ -90,11 +90,20 @@
     lastUpdated: null
   };
   
+  // LocalStorage keys as fallback
+  const localKeys = {
+    member: 'memberTotalAmt',
+    admin: 'adminTotalAmt'
+  };
+  
+  // Flag to track if server storage is working
+  let serverStorageWorking = true;
+  
   // Fetch the latest values from the server
   async function fetchValues() {
     try {
-      // Add a cache-busting parameter to prevent caching
-      const response = await fetch('update_contributions.php?t=' + Date.now());
+      // Use our HTML-based API with cache-busting
+      const response = await fetch(`data.html?action=get&t=${Date.now()}`);
       if (!response.ok) {
         throw new Error('Server returned ' + response.status);
       }
@@ -104,11 +113,61 @@
       values.admin = parseFloat(data.admin);
       values.lastUpdated = data.lastUpdated;
       
+      // If we got valid data, update localStorage as backup
+      try {
+        localStorage.setItem(localKeys.member, values.member.toFixed(2));
+        localStorage.setItem(localKeys.admin, values.admin.toFixed(2));
+      } catch (e) {
+        console.warn('Could not update localStorage backup', e);
+      }
+      
       console.log('Fetched values from server:', values);
+      
+      serverStorageWorking = true;
       render();
       return true;
     } catch (error) {
       console.error('Error fetching values:', error);
+      serverStorageWorking = false;
+      
+      // Try direct file access as a fallback
+      try {
+        const txtResponse = await fetch(`data.txt?t=${Date.now()}`);
+        if (txtResponse.ok) {
+          const txtData = await txtResponse.text();
+          const [memberStr, adminStr] = txtData.split('|');
+          
+          values.member = parseFloat(memberStr || '0');
+          values.admin = parseFloat(adminStr || '0');
+          values.lastUpdated = new Date().toISOString();
+          
+          console.log('Fetched values directly from text file:', values);
+          render();
+          return true;
+        }
+      } catch (txtError) {
+        console.error('Error fetching from text file:', txtError);
+      }
+      
+      // Fall back to localStorage if all server methods fail
+      try {
+        const memberValue = localStorage.getItem(localKeys.member);
+        const adminValue = localStorage.getItem(localKeys.admin);
+        
+        if (memberValue !== null) {
+          values.member = parseFloat(memberValue);
+        }
+        
+        if (adminValue !== null) {
+          values.admin = parseFloat(adminValue);
+        }
+        
+        console.log('Using localStorage fallback values:', values);
+        render();
+      } catch (e) {
+        console.error('Could not read from localStorage fallback', e);
+      }
+      
       return false;
     }
   }
@@ -116,16 +175,9 @@
   // Save values to the server
   async function saveValues() {
     try {
-      const response = await fetch('update_contributions.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          member: values.member,
-          admin: values.admin
-        })
-      });
+      // Use our HTML-based API
+      const url = `data.html?action=set&member=${values.member.toFixed(2)}&admin=${values.admin.toFixed(2)}&t=${Date.now()}`;
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error('Server returned ' + response.status);
@@ -136,13 +188,62 @@
       
       if (result.success) {
         values.lastUpdated = result.data.lastUpdated;
+        serverStorageWorking = true;
+        
+        // Also save to localStorage as backup
+        try {
+          localStorage.setItem(localKeys.member, values.member.toFixed(2));
+          localStorage.setItem(localKeys.admin, values.admin.toFixed(2));
+        } catch (e) {
+          console.warn('Could not update localStorage backup', e);
+        }
+        
         return true;
       } else {
-        return false;
+        throw new Error(result.message || 'Unknown server error');
       }
     } catch (error) {
-      console.error('Error saving values:', error);
-      return false;
+      console.error('Error saving values to server:', error);
+      serverStorageWorking = false;
+      
+      // Try direct file access as a fallback
+      try {
+        // Create a form to submit the data directly
+        const form = new FormData();
+        form.append('data', `${values.member.toFixed(2)}|${values.admin.toFixed(2)}`);
+        
+        const directResponse = await fetch('data.txt', {
+          method: 'POST',
+          body: form
+        });
+        
+        if (directResponse.ok) {
+          console.log('Saved values directly to text file');
+          
+          // Also save to localStorage as backup
+          try {
+            localStorage.setItem(localKeys.member, values.member.toFixed(2));
+            localStorage.setItem(localKeys.admin, values.admin.toFixed(2));
+          } catch (e) {
+            console.warn('Could not update localStorage backup', e);
+          }
+          
+          return true;
+        }
+      } catch (directError) {
+        console.error('Error saving directly to text file:', directError);
+      }
+      
+      // Fall back to localStorage
+      try {
+        localStorage.setItem(localKeys.member, values.member.toFixed(2));
+        localStorage.setItem(localKeys.admin, values.admin.toFixed(2));
+        console.log('Saved values to localStorage fallback');
+        return true; // Return success even though server save failed
+      } catch (e) {
+        console.error('Could not save to localStorage fallback', e);
+        return false;
+      }
     }
   }
   
@@ -268,13 +369,17 @@
       values.admin = a;
     }
     
-    // Save to server
+    // Save values
     const saveSuccess = await saveValues();
     
     if (!saveSuccess) {
-      alert('Warning: There was an issue saving the values to the server. Please try again later.');
+      alert('Warning: There was an issue saving the values. The changes will only be visible on this device.');
     } else {
-      alert('Values updated successfully! All users will now see these updated totals.');
+      if (serverStorageWorking) {
+        alert('Values updated successfully! All users will now see these updated totals.');
+      } else {
+        alert('Values saved locally. Due to server issues, these changes will only be visible on this device.');
+      }
     }
     
     closeEditModal(); 

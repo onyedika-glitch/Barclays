@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test File Writing</title>
+</head>
+<body>
+    <h1>Test File Writing</h1>
+    <p>This page tests if the server allows direct file writing.</p>
+    
+    <button onclick="testWrite()">Test Write</button>
+    <button onclick="testRead()">Test Read</button>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+    
+    <script>
+        function testWrite() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing write...';
+            
+            // Create a form to submit the data directly
+            const form = new FormData();
+            form.append('data', 'Test data: ' + new Date().toISOString());
+            
+            fetch('test-data.txt', {
+                method: 'POST',
+                body: form
+            })
+            .then(response => {
+                if (response.ok) {
+                    result.innerHTML = 'Write successful! Status: ' + response.status;
+                } else {
+                    result.innerHTML = 'Write failed. Status: ' + response.status;
+                }
+            })
+            .catch(error => {
+                result.innerHTML = 'Error: ' + error.message;
+            });
+        }
+        
+        function testRead() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing read...';
+            
+            fetch('test-data.txt')
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(text => {
+                        result.innerHTML = 'Read successful! Content: ' + text;
+                    });
+                } else {
+                    result.innerHTML = 'Read failed. Status: ' + response.status;
+                }
+            })
+            .catch(error => {
+                result.innerHTML = 'Error: ' + error.message;
+            });
+        }
+    </script>
+</body>
+</html>
