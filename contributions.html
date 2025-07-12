@@ -51,12 +51,13 @@
 
     <section class="card ctr-card">
       <h2>Admin Total</h2>
-      <div class="total" id="adminTotal">$ 1300.00</div>
+      <div class="total" id="adminTotal">$ 0.00</div>
     </section>
   </div>
 
   <p style="text-align:center;margin-top:2rem;">
     <a href="member.html" class="btn">Back to Dashboard</a>
+    <button onclick="promptDevCode()" class="btn" style="margin-left:1rem;background:#64748b;">Admin Access</button>
   </p>
 
   <!-- hidden floating button (appears after unlock) -->
@@ -79,23 +80,74 @@
   /* ─── persistent totals in LocalStorage ───────────────────── */
   const store = { member:'memberTotalAmt', admin:'adminTotalAmt' };
   const $ = id => document.getElementById(id);
-  function get(role){ return parseFloat(localStorage.getItem(store[role])||'0'); }
-  function set(role,val){ localStorage.setItem(store[role], val.toFixed(2)); }
+  
+  // Improved localStorage functions with error handling
+  function get(role){ 
+    try {
+      const value = localStorage.getItem(store[role]) || '0';
+      return parseFloat(value); 
+    } catch (e) {
+      console.error('Error getting value:', e);
+      return 0;
+    }
+  }
+  
+  function set(role, val){ 
+    try {
+      const valueToStore = val.toFixed(2);
+      localStorage.setItem(store[role], valueToStore);
+      console.log(`Saved ${role} value: ${valueToStore}`);
+    } catch (e) {
+      console.error('Error saving value:', e);
+      alert('Could not save data. Please check if private browsing is disabled.');
+    }
+  }
 
   function render(){
     $('memberTotal').textContent='$ '+get('member').toLocaleString();
     $('adminTotal').textContent='$ '+get('admin').toLocaleString();
+    console.log('Rendered values - Member:', get('member'), 'Admin:', get('admin'));
   }
   render();
 
-  /* ─── secret unlock (Ctrl+Shift+U) ────────────────────────── */
+  /* ─── secret unlock methods (works on all devices) ────────────────────────── */
   const DEV_CODE='4321';  // ← your private 4-digit code
+  
+  // Keep keyboard shortcut for desktop users
   document.addEventListener('keydown', e=>{
     if(e.ctrlKey && e.shiftKey && e.code==='KeyU'){
-      const inp = prompt('Developer code:');
-      if(inp===DEV_CODE) $('adminBtn').style.display='block';
+      promptDevCode();
     }
   });
+  
+  // Add hidden area for mobile users (triple tap on title)
+  let tapCount = 0;
+  let tapTimer = null;
+  document.querySelector('h1').addEventListener('click', function() {
+    tapCount++;
+    
+    // Reset tap count after 2 seconds of inactivity
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
+    
+    // After 3 taps, show the prompt
+    if (tapCount >= 3) {
+      tapCount = 0;
+      clearTimeout(tapTimer);
+      promptDevCode();
+    }
+  });
+  
+  // Centralized function to handle the dev code prompt
+  function promptDevCode() {
+    const inp = prompt('Developer code:');
+    if(inp===DEV_CODE) {
+      $('adminBtn').style.display='block';
+      
+      // Also check if we need to load stored values
+      render();
+    }
+  };
 
   /* ─── modal open/close/edit logic ─────────────────────────── */
   function openEditModal(){
@@ -105,10 +157,36 @@
   }
   function closeEditModal(){ $('editModal').classList.remove('show'); }
   function saveTotals(){
-    const m=parseFloat($('newMember').value); const a=parseFloat($('newAdmin').value);
-    if(!isNaN(m)) set('member',m);
-    if(!isNaN(a)) set('admin',a);
-    closeEditModal(); render();
+    const memberValue = $('newMember').value;
+    const adminValue = $('newAdmin').value;
+    
+    const m = parseFloat(memberValue);
+    const a = parseFloat(adminValue);
+    
+    let saveSuccess = true;
+    
+    if(!isNaN(m)) {
+      set('member', m);
+      // Verify the save worked
+      if (Math.abs(get('member') - m) > 0.01) {
+        saveSuccess = false;
+      }
+    }
+    
+    if(!isNaN(a)) {
+      set('admin', a);
+      // Verify the save worked
+      if (Math.abs(get('admin') - a) > 0.01) {
+        saveSuccess = false;
+      }
+    }
+    
+    if (!saveSuccess) {
+      alert('Warning: There was an issue saving the values. Please check if your browser allows local storage.');
+    }
+    
+    closeEditModal(); 
+    render();
   }
   </script>
   <!-- Keep everything above the existing closing </script> as-is -->
