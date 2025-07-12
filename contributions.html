@@ -12,11 +12,11 @@
     .ctr-card h2  { margin:0 0 1rem 0; color:var(--brand-orange);}
     .total        { font-size:2rem; font-weight:600; }
 
-    /* ── hidden admin button (shows after unlock) ───────── */
-    #adminBtn     { position:fixed; bottom:1.5rem; right:1.5rem;
-                    display:none; padding:.55rem .9rem; font:600 0.9rem Inter,sans-serif;
+    /* ── hidden admin buttons (show after unlock) ───────── */
+    #adminBtn     { padding:.55rem .9rem; font:600 0.9rem Inter,sans-serif;
                     background:#64748b; color:#fff; border:none; border-radius:6px; }
     #adminBtn:hover{ background:#475569; }
+    #shareBtn:hover{ background:#2563eb; }
 
     /* ── modal (same style as previous verify) ─────────── */
     .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45);
@@ -60,8 +60,11 @@
     <button onclick="promptDevCode()" class="btn" style="margin-left:1rem;background:#64748b;">Admin Access</button>
   </p>
 
-  <!-- hidden floating button (appears after unlock) -->
-  <button id="adminBtn" onclick="openEditModal()">Update totals</button>
+  <!-- hidden floating buttons (appear after unlock) -->
+  <div style="position:fixed; bottom:1.5rem; right:1.5rem; display:flex; gap:0.5rem;">
+    <button id="adminBtn" onclick="openEditModal()" style="display:none;">Update totals</button>
+    <button id="shareBtn" onclick="shareCurrentTotals()" style="display:none; background:#3b82f6; color:#fff; padding:.55rem .9rem; font:600 0.9rem Inter,sans-serif; border:none; border-radius:6px;">Share totals</button>
+  </div>
 
   <!-- edit modal -->
   <div class="modal-overlay" id="editModal" aria-hidden="true">
@@ -77,38 +80,94 @@
   </div>
 
   <script>
-  /* ─── persistent totals in LocalStorage ───────────────────── */
-  const store = { member:'memberTotalAmt', admin:'adminTotalAmt' };
+  /* ─── server-side persistent totals ───────────────────── */
   const $ = id => document.getElementById(id);
   
-  // Improved localStorage functions with error handling
-  function get(role){ 
+  // Global values object
+  const values = {
+    member: 0,
+    admin: 0,
+    lastUpdated: null
+  };
+  
+  // Fetch the latest values from the server
+  async function fetchValues() {
     try {
-      const value = localStorage.getItem(store[role]) || '0';
-      return parseFloat(value); 
-    } catch (e) {
-      console.error('Error getting value:', e);
-      return 0;
+      // Add a cache-busting parameter to prevent caching
+      const response = await fetch('update_contributions.php?t=' + Date.now());
+      if (!response.ok) {
+        throw new Error('Server returned ' + response.status);
+      }
+      
+      const data = await response.json();
+      values.member = parseFloat(data.member);
+      values.admin = parseFloat(data.admin);
+      values.lastUpdated = data.lastUpdated;
+      
+      console.log('Fetched values from server:', values);
+      render();
+      return true;
+    } catch (error) {
+      console.error('Error fetching values:', error);
+      return false;
     }
   }
   
-  function set(role, val){ 
+  // Save values to the server
+  async function saveValues() {
     try {
-      const valueToStore = val.toFixed(2);
-      localStorage.setItem(store[role], valueToStore);
-      console.log(`Saved ${role} value: ${valueToStore}`);
-    } catch (e) {
-      console.error('Error saving value:', e);
-      alert('Could not save data. Please check if private browsing is disabled.');
+      const response = await fetch('update_contributions.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          member: values.member,
+          admin: values.admin
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Server returned ' + response.status);
+      }
+      
+      const result = await response.json();
+      console.log('Save result:', result);
+      
+      if (result.success) {
+        values.lastUpdated = result.data.lastUpdated;
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Error saving values:', error);
+      return false;
     }
   }
-
-  function render(){
-    $('memberTotal').textContent='$ '+get('member').toLocaleString();
-    $('adminTotal').textContent='$ '+get('admin').toLocaleString();
-    console.log('Rendered values - Member:', get('member'), 'Admin:', get('admin'));
+  
+  // Get function returns from our values object
+  function get(role) {
+    return values[role];
   }
-  render();
+  
+  // Set function updates our values object and saves to server
+  async function set(role, val) {
+    values[role] = val;
+    return await saveValues();
+  }
+
+  function render() {
+    $('memberTotal').textContent = '$ ' + values.member.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    $('adminTotal').textContent = '$ ' + values.admin.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    console.log('Rendered values - Member:', values.member, 'Admin:', values.admin);
+  }
+  
+  // Initial fetch of values
+  fetchValues();
+  
+  // Set up periodic refresh (every 30 seconds)
+  setInterval(fetchValues, 30000);
 
   /* ─── secret unlock methods (works on all devices) ────────────────────────── */
   const DEV_CODE='4321';  // ← your private 4-digit code
@@ -143,11 +202,48 @@
     const inp = prompt('Developer code:');
     if(inp===DEV_CODE) {
       $('adminBtn').style.display='block';
+      $('shareBtn').style.display='block';
       
-      // Also check if we need to load stored values
-      render();
+      // Refresh values from server
+      fetchValues();
     }
   };
+  
+  // Function to share information about the contribution page
+  function shareCurrentTotals() {
+    const pageUrl = window.location.href.split('?')[0]; // Remove any query parameters
+    
+    // Try to use the Web Share API if available (mobile devices)
+    if (navigator.share) {
+      navigator.share({
+        title: 'Total Contributions',
+        text: `Check out our contribution totals! Member: $${values.member.toFixed(2)}, Admin: $${values.admin.toFixed(2)}`,
+        url: pageUrl
+      })
+      .then(() => console.log('Successfully shared'))
+      .catch((error) => {
+        console.error('Error sharing:', error);
+        fallbackShare(pageUrl);
+      });
+    } else {
+      fallbackShare(pageUrl);
+    }
+  }
+  
+  // Fallback sharing method for devices without Web Share API
+  function fallbackShare(url) {
+    const message = `Total Contributions\nMember: $${values.member.toFixed(2)}\nAdmin: $${values.admin.toFixed(2)}\n\n${url}`;
+    
+    // Create a temporary input element to copy the message
+    const tempInput = document.createElement('textarea');
+    tempInput.value = message;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    
+    alert('Contribution information copied to clipboard! You can share this with others.');
+  }
 
   /* ─── modal open/close/edit logic ─────────────────────────── */
   function openEditModal(){
@@ -156,33 +252,29 @@
     $('editModal').classList.add('show');
   }
   function closeEditModal(){ $('editModal').classList.remove('show'); }
-  function saveTotals(){
+  async function saveTotals(){
     const memberValue = $('newMember').value;
     const adminValue = $('newAdmin').value;
     
     const m = parseFloat(memberValue);
     const a = parseFloat(adminValue);
     
-    let saveSuccess = true;
-    
+    // Update our local values object
     if(!isNaN(m)) {
-      set('member', m);
-      // Verify the save worked
-      if (Math.abs(get('member') - m) > 0.01) {
-        saveSuccess = false;
-      }
+      values.member = m;
     }
     
     if(!isNaN(a)) {
-      set('admin', a);
-      // Verify the save worked
-      if (Math.abs(get('admin') - a) > 0.01) {
-        saveSuccess = false;
-      }
+      values.admin = a;
     }
     
+    // Save to server
+    const saveSuccess = await saveValues();
+    
     if (!saveSuccess) {
-      alert('Warning: There was an issue saving the values. Please check if your browser allows local storage.');
+      alert('Warning: There was an issue saving the values to the server. Please try again later.');
+    } else {
+      alert('Values updated successfully! All users will now see these updated totals.');
     }
     
     closeEditModal(); 
