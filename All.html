@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>All – ING Demo</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .container  { max-width:960px; margin:3rem auto; font-family:Inter,sans-serif; }
+    h1          { text-align:center; color:var(--brand-orange); }
+    table       { width:100%; border-collapse:collapse; margin-top:2rem; }
+    th, td      { border-bottom:1px solid #ccc; padding:0.75rem; text-align:left; }
+    th          { background:#f1f5f9; color:#1e293b; }
+    td          { color:#334155; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>All Transactions</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Role</th>
+          <th>Amount</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody id="txnTableBody"></tbody>
+    </table>
+
+    <p style="text-align:center;margin-top:2rem;">
+      <a href="member.html" class="btn">Back to Member Dashboard</a>
+    </p>
+  </div>
+
+  <script>
+    const transactions = [
+      {
+        date: '2025-07-12',
+        amount: Nill,
+        role: 'Member',
+        description: 'Nill.'
+      },
+      // You can add more transactions here
+    ];
+
+    const tbody = document.getElementById('txnTableBody');
+    transactions.forEach(txn => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${txn.date}</td>
+        <td>${txn.role}</td>
+        <td>$${txn.amount.toLocaleString()}</td>
+        <td>${txn.description}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  </script>
+</body>
+</html>

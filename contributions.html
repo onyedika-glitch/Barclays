@@ -51,7 +51,7 @@
 
     <section class="card ctr-card">
       <h2>Admin Total</h2>
-      <div class="total" id="adminTotal">$ 0.00</div>
+      <div class="total" id="adminTotal">$ 1300.00</div>
     </section>
   </div>
 
@@ -111,5 +111,40 @@
     closeEditModal(); render();
   }
   </script>
+  <!-- Keep everything above the existing closing </script> as-is -->
+
+<!-- Add this below the totals (right before </body>) -->
+<section class="card" style="margin: 3rem auto 0; max-width: 960px;">
+  <h2 style="color: var(--brand-orange); margin-bottom: 1rem;">Recent Activity</h2>
+  <ul id="activityLog" style="list-style:none;padding:0;font-family:Inter,sans-serif;">
+    <!-- Populated by script -->
+  </ul>
+</section>
+
+<script>
+  const recentTransactions = [
+    {
+      date: '2025-07-12',
+      amount: 1300,
+      role: 'Member',
+      description: 'For an apartment with my wife-to-be, Solina.'
+    }
+    // Add more objects like this if needed
+  ];
+
+  const list = document.getElementById('activityLog');
+  if (list) {
+    recentTransactions.forEach(t => {
+      const li = document.createElement('li');
+      li.style.marginBottom = '0.75rem';
+      li.innerHTML = `
+        <strong>${t.role}</strong> – <span style="color:#334155;">$${t.amount.toLocaleString()}</span><br>
+        <small>${t.date} – ${t.description}</small>
+      `;
+      list.appendChild(li);
+    });
+  }
+</script>
+
 </body>
 </html>
