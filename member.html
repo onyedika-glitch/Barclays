@@ -63,24 +63,36 @@ s0.parentNode.insertBefore(s1,s0);
   <section class="card">
     <h2>Recent Transactions</h2>
     <ul class="txn-list">
-      <li class="txn in">
-        <span class="label">
-          <span class="icon">⬇</span>Proposed  Salary
-        </span>
-        <span class="amount">+ $1,500</span>
-      </li>
       <li class="txn out">
         <span class="label">
-          <span class="icon">⬆</span> Rent
+          <span class="icon">⬆</span> Amount
         </span>
-        <span class="amount">- $0</span>
+        <span class="amount">- $0.00</span>
       </li>
-      <li class="txn out">
+      <li class="txn date">
         <span class="label">
-          <span class="icon">⬆</span> Groceries
+          <span class="icon">⬇</span> Date
         </span>
-        <span class="amount">- $00.00</span>
+        <span class="amount">Nill</span>
       </li>
+      <li class="txn desc">
+        <span class="label">
+          <span class="icon">ℹ</span> Purpose
+        </span>
+        <span class="amount">Housing</span>
+      </li>
+      <li class="txn interest">
+        <span class="label">
+          <span class="icon">👤</span> Interest (5%)
+        </span>
+        <span class="amount">$0.00</span>
+      </li>
+      <li class="txn total">
+        <span class="label">
+          <span class="icon">💰</span> Total Balance
+        </span>
+        <span class="amount">$0.00</span>
+
     </ul>
   </section>
 
@@ -95,6 +107,74 @@ s0.parentNode.insertBefore(s1,s0);
   </section>
 
 </div>
+
+<section class="card">
+  <h2>Monthly Savings Tracker (July 2025 – June 2026)</h2>
+  <table style="width:100%; text-align:left; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Due Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="calendarBody">
+      <!-- Populated by script -->
+    </tbody>
+  </table>
+</section>
+
+<style>
+  .calendar-check {
+    padding: 4px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .calendar-check.paid {
+    background: #22c55e;
+    color: #fff;
+    border-color: #16a34a;
+  }
+</style>
+
+<script>
+  const months = [
+    'July 2025', 'August 2025', 'September 2025', 'October 2025',
+    'November 2025', 'December 2025', 'January 2026', 'February 2026',
+    'March 2026', 'April 2026', 'May 2026', 'June 2026'
+  ];
+
+  const $cal = document.getElementById('calendarBody');
+  const statusKey = 'calendarPaidStatus';
+
+  function getStatus() {
+    return JSON.parse(localStorage.getItem(statusKey) || '[]');
+  }
+
+  function renderCalendar() {
+    const status = getStatus();
+    $cal.innerHTML = '';
+
+    months.forEach((month, i) => {
+      const paid = status.includes(i);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${month}</td>
+        <td>15th</td>
+        <td>
+          <span class="calendar-check ${paid ? 'paid' : ''}">
+            ${paid ? '✔ Paid' : 'Pending'}
+          </span>
+        </td>
+      `;
+      $cal.appendChild(row);
+    });
+  }
+
+  renderCalendar();
+</script>
+
    
     <section class="slide">
     <img src="images/footer.png">

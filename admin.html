@@ -41,7 +41,7 @@ s0.parentNode.insertBefore(s1,s0);
 <!-- Account Summary -->
   <section class="card">
     <h2>Account Summary</h2>
-    <div class="balance">$ 1154.70</div>
+    <div class="balance">$ 1365.00</div>
     <p class="small">Savings • ****5678</p>
     <p class="small">Interest rate: 5.00 % p.a.</p>
   </section>
@@ -50,30 +50,36 @@ s0.parentNode.insertBefore(s1,s0);
   <section class="card">
     <h2>Recent Transactions</h2>
     <ul class="txn-list">
-      <li class="txn in">
-        <span class="label">
-          <span class="icon">⬇</span> Salary
-        </span>
-        <span class="amount">+ $4,000</span>
-      </li>
       <li class="txn out">
         <span class="label">
-          <span class="icon">⬆</span> Rent
-        </span>
-        <span class="amount">- $1,200</span>
-      </li>
-      <li class="txn out">
-        <span class="label">
-          <span class="icon">⬆</span> Groceries
-        </span>
-        <span class="amount">- $145.30</span>
-      </li>
-      <li class="txn out">
-        <span class="label">
-          <span class="icon">⬆</span> Contributions
+          <span class="icon">⬆</span> Amount
         </span>
         <span class="amount">- $1300.00</span>
       </li>
+      <li class="txn date">
+        <span class="label">
+          <span class="icon">⬇</span> Date
+        </span>
+        <span class="amount">July 12, 2025</span>
+      </li>
+      <li class="txn desc">
+        <span class="label">
+          <span class="icon">ℹ</span> Purpose
+        </span>
+        <span class="amount">Housing</span>
+      </li>
+      <li class="txn interest">
+        <span class="label">
+          <span class="icon">👤</span> Interest (5%)
+        </span>
+        <span class="amount">$65</span>
+      </li>
+      <li class="txn total">
+        <span class="label">
+          <span class="icon">💰</span> Total Balance
+        </span>
+        <span class="amount">$1365.00</span>
+
     </ul>
   </section>
 
@@ -91,6 +97,89 @@ s0.parentNode.insertBefore(s1,s0);
   </section>
 
 </div>
+<section class="card">
+  <h2>Monthly Savings Tracker (July 2025 – June 2026)</h2>
+  <table style="width:100%; text-align:left; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Due Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="calendarBody">
+      <!-- Dynamically filled -->
+    </tbody>
+  </table>
+</section>
+
+<style>
+  .calendar-check {
+    padding: 4px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .calendar-check.paid {
+    background: #22c55e;
+    color: #fff;
+    border-color: #16a34a;
+  }
+</style>
+
+<script>
+  const months = [
+    'July 2025', 'August 2025', 'September 2025', 'October 2025',
+    'November 2025', 'December 2025', 'January 2026', 'February 2026',
+    'March 2026', 'April 2026', 'May 2026', 'June 2026'
+  ];
+
+  const $cal = document.getElementById('calendarBody');
+  const statusKey = 'calendarPaidStatus';
+
+  function getStatus() {
+    return JSON.parse(localStorage.getItem(statusKey) || '[]');
+  }
+
+  function setStatus(data) {
+    localStorage.setItem(statusKey, JSON.stringify(data));
+  }
+
+  function renderCalendar() {
+    const status = getStatus();
+    $cal.innerHTML = '';
+
+    months.forEach((month, i) => {
+      const paid = status.includes(i);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${month}</td>
+        <td>15th</td>
+        <td>
+          <button class="calendar-check ${paid ? 'paid' : ''}" onclick="toggleMonth(${i})">
+            ${paid ? '✔ Paid' : 'Mark as Paid'}
+          </button>
+        </td>
+      `;
+      $cal.appendChild(row);
+    });
+  }
+
+  function toggleMonth(i) {
+    let status = getStatus();
+    if (status.includes(i)) {
+      status = status.filter(x => x !== i);
+    } else {
+      status.push(i);
+    }
+    setStatus(status);
+    renderCalendar();
+  }
+
+  renderCalendar();
+</script>
+
    
     <section class="slide">
     <img src="images/footer.png">
