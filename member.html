@@ -163,13 +163,31 @@ s0.parentNode.insertBefore(s1,s0);
         <td>${month}</td>
         <td>28th</td>
         <td>
-          <span class="calendar-check ${paid ? 'paid' : ''}">
-            ${paid ? '✔ Paid' : 'Pending'}
-          </span>
+          <button class="calendar-check ${paid ? 'paid' : ''}" onclick="toggleMonth(${i})">
+            ${paid ? '✔ Paid' : 'Mark as Paid'}
+          </button>
         </td>
       `;
       $cal.appendChild(row);
     });
+  }
+
+  function toggleMonth(monthIndex) {
+    const status = getStatus();
+    const isPaid = status.includes(monthIndex);
+    
+    if (isPaid) {
+      // Remove from paid list
+      const newStatus = status.filter(index => index !== monthIndex);
+      localStorage.setItem(statusKey, JSON.stringify(newStatus));
+    } else {
+      // Add to paid list
+      status.push(monthIndex);
+      localStorage.setItem(statusKey, JSON.stringify(status));
+    }
+    
+    // Re-render the calendar
+    renderCalendar();
   }
 
   renderCalendar();
