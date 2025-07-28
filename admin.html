@@ -108,23 +108,27 @@ s0.parentNode.insertBefore(s1,s0);
       </tr>
     </thead>
     <tbody id="calendarBody">
-      <!-- Dynamically filled -->
+      <!-- Populated by script -->
     </tbody>
   </table>
 </section>
 
 <style>
-  .calendar-check {
+  .calendar-status {
     padding: 4px 10px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    cursor: pointer;
     font-weight: 500;
   }
-  .calendar-check.paid {
+  .calendar-status.paid {
     background: #22c55e;
     color: #fff;
     border-color: #16a34a;
+  }
+  .calendar-status.pending {
+    background: #facc15;
+    color: #1e293b;
+    border-color: #eab308;
   }
 </style>
 
@@ -135,46 +139,28 @@ s0.parentNode.insertBefore(s1,s0);
     'March 2026', 'April 2026', 'May 2026', 'June 2026'
   ];
 
+  // 👇 Manually set which months are paid (use index: 0 for July, 1 for August, etc.)
+  const paidStatus = [0,]; // ← You manually edit this array to mark paid months
+
   const $cal = document.getElementById('calendarBody');
-  const statusKey = 'calendarPaidStatus';
-
-  function getStatus() {
-    return JSON.parse(localStorage.getItem(statusKey) || '[]');
-  }
-
-  function setStatus(data) {
-    localStorage.setItem(statusKey, JSON.stringify(data));
-  }
 
   function renderCalendar() {
-    const status = getStatus();
     $cal.innerHTML = '';
 
     months.forEach((month, i) => {
-      const paid = status.includes(i);
+      const paid = paidStatus.includes(i);
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${month}</td>
         <td>28th</td>
         <td>
-          <button class="calendar-check ${paid ? 'paid' : ''}" onclick="toggleMonth(${i})">
-            ${paid ? '✔ Paid' : 'Mark as Paid'}
-          </button>
+          <span class="calendar-status ${paid ? 'paid' : 'pending'}">
+            ${paid ? '✔ Paid' : 'Pending'}
+          </span>
         </td>
       `;
       $cal.appendChild(row);
     });
-  }
-
-  function toggleMonth(i) {
-    let status = getStatus();
-    if (status.includes(i)) {
-      status = status.filter(x => x !== i);
-    } else {
-      status.push(i);
-    }
-    setStatus(status);
-    renderCalendar();
   }
 
   renderCalendar();
