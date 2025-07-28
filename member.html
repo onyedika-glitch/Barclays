@@ -138,42 +138,69 @@ s0.parentNode.insertBefore(s1,s0);
   }
 </style>
 
-<script>
-  const months = [
-    'July 2025', 'August 2025', 'September 2025', 'October 2025',
-    'November 2025', 'December 2025', 'January 2026', 'February 2026',
-    'March 2026', 'April 2026', 'May 2026', 'June 2026'
-  ];
+ <script>
+    const months = [
+      'July 2025', 'August 2025', 'September 2025', 'October 2025',
+      'November 2025', 'December 2025', 'January 2026', 'February 2026',
+      'March 2026', 'April 2026', 'May 2026', 'June 2026'
+    ];
 
-  const $cal = document.getElementById('calendarBody');
-  const statusKey = 'calendarPaidStatus';
+    const $cal = document.getElementById('calendarBody');
+    const API_URL = 'api.php'; // local usage
 
-  function getStatus() {
-    return JSON.parse(localStorage.getItem(statusKey) || '[]');
-  }
+    async function getPaidStatus() {
+      try {
+        const res = await fetch(`${API_URL}?action=get`);
+        const data = await res.json();
+        const statusString = data.member || "0";
+        return statusString.split(',').map(x => parseInt(x)).filter(Number.isFinite);
+      } catch (err) {
+        console.error("Failed to fetch paid status:", err);
+        return [];
+      }
+    }
 
-  function renderCalendar() {
-    const status = getStatus();
-    $cal.innerHTML = '';
+    async function setPaidStatus(statusArray) {
+      const member = statusArray.join(',');
+      const admin = '0';
+      const url = `${API_URL}?action=set&member=${encodeURIComponent(member)}&admin=${admin}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.success) console.error("Save failed", data.message);
+      } catch (err) {
+        console.error("Failed to save paid status:", err);
+      }
+    }
 
-    months.forEach((month, i) => {
-      const paid = status.includes(i);
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${month}</td>
-        <td>28th</td>
-        <td>
-          <button class="calendar-check ${paid ? 'paid' : ''}" onclick="toggleMonth(${i})">
-            ${paid ? '✔ Paid' : 'Mark as Paid'}
-          </button>
-        </td>
-      `;
-      $cal.appendChild(row);
-    });
-  }
+    async function toggleMonth(index) {
+      const status = await getPaidStatus();
+      const exists = status.includes(index);
+      const newStatus = exists ? status.filter(i => i !== index) : [...status, index];
+      await setPaidStatus(newStatus);
+      renderCalendar(newStatus);
+    }
 
-  renderCalendar();
-</script>
+    function renderCalendar(status = []) {
+      $cal.innerHTML = '';
+      months.forEach((month, i) => {
+        const paid = status.includes(i);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${month}</td>
+          <td>28th</td>
+          <td>
+            <button class="calendar-check ${paid ? 'paid' : ''}" onclick="toggleMonth(${i})">
+              ${paid ? '✔ Paid' : 'Mark as Paid'}
+            </button>
+          </td>
+        `;
+        $cal.appendChild(row);
+      });
+    }
+
+    getPaidStatus().then(renderCalendar);
+  </script>
 
    
     <section class="slide">
