@@ -110,6 +110,16 @@ s0.parentNode.insertBefore(s1,s0);
 
 <section class="card">
   <h2>Monthly Savings Tracker (July 2025 – June 2026)</h2>
+  
+  <!-- Quick Action Button -->
+  <div style="margin-bottom: 15px; text-align: center;">
+    <button id="markCurrentMonthBtn" class="btn" onclick="markCurrentMonth()" 
+            style="background: #22c55e; color: white; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500;">
+      💰 Mark Current Month as Paid
+    </button>
+    <p id="currentMonthInfo" style="margin: 5px 0; font-size: 14px; color: #666;"></p>
+  </div>
+  
   <table style="width:100%; text-align:left; border-collapse:collapse;">
     <thead>
       <tr>
@@ -146,10 +156,22 @@ s0.parentNode.insertBefore(s1,s0);
   ];
 
   const $cal = document.getElementById('calendarBody');
-  const statusKey = 'calendarPaidStatus';
 
+  // Function to get calendar status from API
   function getStatus() {
-    return JSON.parse(localStorage.getItem(statusKey) || '[]');
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'calendar-api.html?action=get', false);  // Synchronous request
+    xhr.send();
+    
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        return response.success ? response.paidMonths : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
   }
 
   function renderCalendar() {
@@ -170,24 +192,116 @@ s0.parentNode.insertBefore(s1,s0);
       `;
       $cal.appendChild(row);
     });
+    
+    // Update the current month info
+    updateCurrentMonthInfo();
+  }
+
+  function getCurrentMonthIndex() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-11
+    
+    // The savings tracker runs from July 2025 to June 2026
+    // July 2025 = index 0, August 2025 = index 1, etc.
+    
+    if (currentYear === 2025) {
+      // July 2025 (month 6) to December 2025 (month 11)
+      if (currentMonth >= 6) { // July is month 6
+        return currentMonth - 6; // July=0, Aug=1, Sep=2, Oct=3, Nov=4, Dec=5
+      }
+    } else if (currentYear === 2026) {
+      // January 2026 (month 0) to June 2026 (month 5)
+      if (currentMonth <= 5) { // June is month 5
+        return currentMonth + 6; // Jan=6, Feb=7, Mar=8, Apr=9, May=10, Jun=11
+      }
+    }
+    
+    return -1; // Outside the tracking period
+  }
+
+  function updateCurrentMonthInfo() {
+    const currentIndex = getCurrentMonthIndex();
+    const infoElement = document.getElementById('currentMonthInfo');
+    const buttonElement = document.getElementById('markCurrentMonthBtn');
+    
+    if (currentIndex === -1) {
+      infoElement.textContent = 'Current date is outside the tracking period (July 2025 - June 2026)';
+      buttonElement.disabled = true;
+      buttonElement.style.opacity = '0.5';
+    } else {
+      const currentMonthName = months[currentIndex];
+      const status = getStatus();
+      const isPaid = status.includes(currentIndex);
+      
+      if (isPaid) {
+        infoElement.textContent = `${currentMonthName} is already marked as paid ✓`;
+        buttonElement.textContent = '✓ Current Month Already Paid';
+        buttonElement.style.background = '#16a34a';
+      } else {
+        infoElement.textContent = `Ready to mark ${currentMonthName} as paid`;
+        buttonElement.textContent = '💰 Mark Current Month as Paid';
+        buttonElement.style.background = '#22c55e';
+      }
+      
+      buttonElement.disabled = false;
+      buttonElement.style.opacity = '1';
+    }
+  }
+
+  function markCurrentMonth() {
+    const currentIndex = getCurrentMonthIndex();
+    
+    if (currentIndex === -1) {
+      alert('Current date is outside the tracking period (July 2025 - June 2026)');
+      return;
+    }
+    
+    const status = getStatus();
+    const isPaid = status.includes(currentIndex);
+    
+    if (isPaid) {
+      const confirmUnmark = confirm(`${months[currentIndex]} is already marked as paid. Do you want to unmark it?`);
+      if (!confirmUnmark) return;
+    }
+    
+    // Use the existing toggleMonth function
+    toggleMonth(currentIndex);
   }
 
   function toggleMonth(monthIndex) {
-    const status = getStatus();
-    const isPaid = status.includes(monthIndex);
+    // Show loading state
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = 'Updating...';
+    button.disabled = true;
     
-    if (isPaid) {
-      // Remove from paid list
-      const newStatus = status.filter(index => index !== monthIndex);
-      localStorage.setItem(statusKey, JSON.stringify(newStatus));
+    // Make API call to toggle month
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `calendar-api.html?action=toggle&month=${monthIndex}`, false);
+    xhr.send();
+    
+    // Reset button state
+    button.disabled = false;
+    
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Re-render the calendar with updated data
+          renderCalendar();
+        } else {
+          alert('Failed to update: ' + response.message);
+          button.textContent = originalText;
+        }
+      } catch (e) {
+        alert('Error updating calendar');
+        button.textContent = originalText;
+      }
     } else {
-      // Add to paid list
-      status.push(monthIndex);
-      localStorage.setItem(statusKey, JSON.stringify(status));
+      alert('Network error');
+      button.textContent = originalText;
     }
-    
-    // Re-render the calendar
-    renderCalendar();
   }
 
   renderCalendar();

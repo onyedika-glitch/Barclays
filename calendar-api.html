@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar API</title>
+    <script>
+        // Get the current values from the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        
+        // Function to read the current calendar data
+        function readCalendarData() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'calendar-data.txt', false);  // Synchronous request
+            xhr.send();
+            
+            if (xhr.status === 200) {
+                return xhr.responseText;
+            } else {
+                return "[]";  // Default empty array
+            }
+        }
+        
+        // Function to write calendar data
+        function writeCalendarData(data) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'calendar-data.txt', false);  // Synchronous request
+            xhr.setRequestHeader('Content-Type', 'text/plain');
+            xhr.send(data);
+            
+            return xhr.status === 200;
+        }
+        
+        // Handle the request
+        if (action === 'get') {
+            // Read and return the current calendar data
+            const data = readCalendarData();
+            let paidMonths = [];
+            
+            try {
+                paidMonths = JSON.parse(data);
+            } catch (e) {
+                paidMonths = [];
+            }
+            
+            document.write(JSON.stringify({
+                success: true,
+                paidMonths: paidMonths,
+                lastUpdated: new Date().toISOString()
+            }));
+        } else if (action === 'toggle') {
+            // Toggle a month's payment status
+            const monthIndex = parseInt(urlParams.get('month'));
+            
+            if (monthIndex !== null && !isNaN(monthIndex)) {
+                const currentData = readCalendarData();
+                let paidMonths = [];
+                
+                try {
+                    paidMonths = JSON.parse(currentData);
+                } catch (e) {
+                    paidMonths = [];
+                }
+                
+                // Toggle the month
+                const isPaid = paidMonths.includes(monthIndex);
+                if (isPaid) {
+                    // Remove from paid list
+                    paidMonths = paidMonths.filter(index => index !== monthIndex);
+                } else {
+                    // Add to paid list
+                    paidMonths.push(monthIndex);
+                }
+                
+                const success = writeCalendarData(JSON.stringify(paidMonths));
+                
+                document.write(JSON.stringify({
+                    success: success,
+                    paidMonths: paidMonths,
+                    monthIndex: monthIndex,
+                    action: isPaid ? 'unpaid' : 'paid',
+                    lastUpdated: new Date().toISOString()
+                }));
+            } else {
+                document.write(JSON.stringify({
+                    success: false,
+                    message: "Invalid month parameter"
+                }));
+            }
+        } else {
+            document.write(JSON.stringify({
+                success: false,
+                message: "Invalid action. Use 'get' or 'toggle'"
+            }));
+        }
+    </script>
+</head>
+<body>
+    <!-- This page serves as a simple calendar API -->
+</body>
+</html>
