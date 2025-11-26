@@ -1,7 +1,7 @@
 
 <?php
 $action = $_GET['action'] ?? '';
-$dataFile = 'savings.txt'; // changed from data.txt to savings.txt
+$dataFile = 'savings.txt'; 
 
 function readData($file) {
     if (!file_exists($file)) return "0.00|0.00";
